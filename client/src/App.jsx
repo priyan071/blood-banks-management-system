@@ -19,6 +19,8 @@ import BloodInventory from './pages/admin/BloodInventory';
 import EmergencyRequests from './pages/admin/EmergencyRequests';
 import TraceabilityAudit from './pages/admin/TraceabilityAudit';
 import ReportsAnalytics from './pages/admin/ReportsAnalytics';
+import BloodBankMap from './pages/admin/BloodBankMap';
+import NotificationCenter from './pages/admin/NotificationCenter';
 
 // Donor Pages
 import DonorDashboard from './pages/donor/DonorDashboard';
@@ -70,6 +72,8 @@ export default function App() {
         <Route path="requests" element={<EmergencyRequests />} />
         <Route path="traceability" element={<TraceabilityAudit />} />
         <Route path="reports" element={<ReportsAnalytics />} />
+        <Route path="map" element={<BloodBankMap />} />
+        <Route path="notifications" element={<NotificationCenter />} />
       </Route>
 
       {/* Donor Module */}
@@ -85,6 +89,7 @@ export default function App() {
         <Route path="eligibility" element={<EligibilityCheck />} />
         <Route path="book" element={<BookAppointment />} />
         <Route path="history" element={<DonationHistory />} />
+        <Route path="map" element={<BloodBankMap />} />
       </Route>
 
       {/* Requester / Hospital Module */}
@@ -100,6 +105,7 @@ export default function App() {
         <Route path="search" element={<BloodSearch />} />
         <Route path="request" element={<EmergencyRequestForm />} />
         <Route path="orders" element={<MyRequests />} />
+        <Route path="map" element={<BloodBankMap />} />
       </Route>
 
       {/* Fallback */}

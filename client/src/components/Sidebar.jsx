@@ -17,6 +17,8 @@ import {
   LogOut,
   ShieldCheck,
   CheckCircle2,
+  MapPin,
+  Bell,
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -30,12 +32,15 @@ export default function Sidebar() {
     { to: '/admin/testing', label: 'Blood Testing Lab', icon: FlaskConical },
     { to: '/admin/inventory', label: 'Blood Inventory', icon: Database },
     { to: '/admin/requests', label: 'Emergency Requests', icon: AlertTriangle },
+    { to: '/admin/map', label: 'Blood Bank Map', icon: MapPin },
+    { to: '/admin/notifications', label: 'Email & Alerts', icon: Bell },
     { to: '/admin/traceability', label: 'Traceability & Audit', icon: GitCommit },
     { to: '/admin/reports', label: 'Reports & Analytics', icon: BarChart3 },
   ];
 
   const getDonorLinks = () => [
     { to: '/donor', label: 'Donor Dashboard', icon: LayoutDashboard },
+    { to: '/donor/map', label: 'Blood Bank Locator', icon: MapPin },
     { to: '/donor/eligibility', label: 'Eligibility Check', icon: ShieldCheck },
     { to: '/donor/book', label: 'Book Appointment', icon: Calendar },
     { to: '/donor/history', label: 'Donation History', icon: HeartHandshake },
@@ -43,6 +48,7 @@ export default function Sidebar() {
 
   const getRequesterLinks = () => [
     { to: '/requester', label: 'Hospital Dashboard', icon: LayoutDashboard },
+    { to: '/requester/map', label: 'Nearby Blood Banks', icon: MapPin },
     { to: '/requester/search', label: 'Search Blood Stock', icon: Search },
     { to: '/requester/request', label: 'Emergency Request', icon: PlusCircle },
     { to: '/requester/orders', label: 'Track Requests', icon: Clock },

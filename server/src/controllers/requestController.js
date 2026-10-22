@@ -1,6 +1,8 @@
 const BloodRequest = require('../models/BloodRequest');
 const BloodUnit = require('../models/BloodUnit');
+const User = require('../models/User');
 const { logTransaction } = require('../utils/auditLogger');
+const emailService = require('../utils/emailService');
 
 // @desc    Create emergency blood request (Hospital/Requester)
 // @route   POST /api/requests
@@ -35,6 +37,22 @@ exports.createRequest = async (req, res, next) => {
       reason,
       status: 'PENDING',
     });
+
+    // Send email notification to hospital / requester asynchronously
+    if (req.user && req.user.email) {
+      emailService
+        .sendEmergencyRequestReceived({
+          requesterEmail: req.user.email,
+          requesterName: req.user.name,
+          patientName,
+          bloodGroup,
+          units: requiredQuantity,
+          hospitalName: assignedHospitalName,
+          urgency,
+          requestId: bloodRequest._id,
+        })
+        .catch((err) => console.warn('[EmailService] Request notification skipped:', err.message));
+    }
 
     res.status(201).json({
       success: true,
@@ -360,6 +378,25 @@ exports.approveAndFulfillRequest = async (req, res, next) => {
     request.processedBy = req.user._id;
     request.processedAt = new Date();
     await request.save();
+
+    // Trigger email notification to requester
+    try {
+      const requesterUser = await User.findById(request.requester);
+      if (requesterUser && requesterUser.email) {
+        emailService
+          .sendRequestStatusUpdate({
+            requesterEmail: requesterUser.email,
+            requesterName: requesterUser.name,
+            patientName: request.patientName,
+            bloodGroup: request.bloodGroup,
+            units: unitsToAllocate.length,
+            status: 'APPROVED',
+            allocatedUnits: unitsToAllocate.map((u) => ({ unitSerialNumber: u.unitId })),
+            hospitalName: request.hospitalName,
+          })
+          .catch((err) => console.warn('[EmailService] Approval email skipped:', err.message));
+      }
+    } catch (_) {}
 
     res.status(200).json({
       success: true,

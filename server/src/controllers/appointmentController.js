@@ -5,6 +5,7 @@ const BloodTest = require('../models/BloodTest');
 const { generateUnitId, calculateExpiryDate } = require('../utils/unitGenerator');
 const { logTransaction } = require('../utils/auditLogger');
 const { assessDonorEligibility } = require('../utils/eligibility');
+const emailService = require('../utils/emailService');
 
 // @desc    Create / book donation appointment
 // @route   POST /api/appointments
@@ -63,6 +64,20 @@ exports.createAppointment = async (req, res, next) => {
         path: 'donor',
         populate: { path: 'user', select: 'name email phone' },
       });
+
+    // Send confirmation email asynchronously
+    const donorUser = populatedAppointment?.donor?.user || req.user;
+    if (donorUser && donorUser.email) {
+      emailService
+        .sendAppointmentConfirmation({
+          donorEmail: donorUser.email,
+          donorName: donorUser.name || 'Hero Donor',
+          appointmentDate: appointment.appointmentDate,
+          timeSlot: appointment.timeSlot,
+          centerName: appointment.bloodBankLocation || 'Easwari Blood Transfusion Center',
+        })
+        .catch((err) => console.warn('[EmailService] Appointment email skipped:', err.message));
+    }
 
     res.status(201).json({
       success: true,
