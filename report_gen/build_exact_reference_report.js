@@ -22,6 +22,11 @@ const imgAdmin = getBase64Image('02_admin_dashboard.png');
 const imgInventory = getBase64Image('03_inventory_management.png');
 const imgRequests = getBase64Image('05_emergency_requests.png');
 
+const collegeLogoPath = path.resolve(__dirname, '../docs/college_logo.jpg');
+const collegeLogoBase64 = fs.existsSync(collegeLogoPath)
+  ? `data:image/jpeg;base64,${fs.readFileSync(collegeLogoPath).toString('base64')}`
+  : '';
+
 console.log('Generating exact 50-page report matching reference PDF styling...');
 
 const pages = [];
@@ -54,7 +59,7 @@ pages.push(`
   </div>
 
   <div style="text-align: center; margin: 15px auto;">
-    ${collegeLogoSvg}
+    <img src="${collegeLogoBase64}" style="width: 72px; height: auto; display: block; margin: 0 auto;" />
   </div>
 
   <div style="text-align: center; margin-bottom: 20px;">
@@ -77,10 +82,8 @@ pages.push(`
 // ==================== PAGE 2: BONAFIDE CERTIFICATE ====================
 pages.push(`
 <div class="page">
-  <div style="text-align: center; margin-bottom: 30px;">
-    <div style="transform: scale(0.65); transform-origin: top center; height: 80px; margin-bottom: 10px;">
-      ${collegeLogoSvg}
-    </div>
+  <div style="position: relative; margin-bottom: 30px; min-height: 55px; text-align: center;">
+    <img src="${collegeLogoBase64}" style="position: absolute; left: 0; top: 0; width: 48px; height: auto;" />
     <h2 style="font-size: 13pt; font-weight: bold; margin: 0 0 8px 0; letter-spacing: 0.5px;">
       BONAFIDE CERTIFICATE
     </h2>
@@ -121,10 +124,8 @@ pages.push(`
 // ==================== PAGE 3: CERTIFICATE OF VIVA VOCE EXAMINATION ====================
 pages.push(`
 <div class="page">
-  <div style="text-align: center; margin-bottom: 30px;">
-    <div style="transform: scale(0.65); transform-origin: top center; height: 80px; margin-bottom: 10px;">
-      ${collegeLogoSvg}
-    </div>
+  <div style="position: relative; margin-bottom: 30px; min-height: 55px; text-align: center;">
+    <img src="${collegeLogoBase64}" style="position: absolute; left: 0; top: 0; width: 48px; height: auto;" />
     <h2 style="font-size: 13pt; font-weight: bold; margin: 0 0 8px 0; letter-spacing: 0.5px;">
       CERTIFICATE OF VIVA VOCE EXAMINATION
     </h2>
@@ -154,9 +155,6 @@ pages.push(`
     </div>
   </div>
 
-  <div style="margin-top: 50px; font-size: 11pt;">
-    <p style="margin: 0;">Date: ________________</p>
-  </div>
   <div class="page-num">3</div>
 </div>
 `);
