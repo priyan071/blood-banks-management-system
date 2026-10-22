@@ -4,6 +4,7 @@
   "private": true,
   "description": "Centralized Blood Bank Management System (MERN Stack)",
   "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
     "build": "cd client && npm install && npm run build",
     "start": "node server/src/server.js",
     "server": "node server/src/server.js",
@@ -18,6 +19,15 @@
     "mongoose": "^8.4.0",
     "morgan": "^1.10.0"
   },
-  "keywords": ["blood-bank", "mern", "vite", "express", "mongodb"],
-  "author": "Priyan R (310624148072)"
+  "keywords": [
+    "blood-bank",
+    "mern",
+    "vite",
+    "express",
+    "mongodb"
+  ],
+  "author": "Priyan R (310624148072)",
+  "devDependencies": {
+    "concurrently": "^9.2.4"
+  }
 }

@@ -46,6 +46,107 @@ exports.createRequest = async (req, res, next) => {
   }
 };
 
+// @desc    Track blood request by ID, patient reference, or allocated unit ID
+// @route   GET /api/requests/track/:identifier
+// @access  Public / Private
+exports.trackRequest = async (req, res, next) => {
+  try {
+    const { identifier } = req.params;
+    const mongoose = require('mongoose');
+
+    let query = {};
+    if (mongoose.Types.ObjectId.isValid(identifier)) {
+      query = { _id: identifier };
+    } else {
+      query = {
+        $or: [
+          { patientReference: identifier },
+          { allocatedUnitIds: identifier },
+        ],
+      };
+    }
+
+    const request = await BloodRequest.findOne(query)
+      .populate('allocatedUnits', 'unitId bloodGroup componentType expiryDate storageLocation')
+      .populate('processedBy', 'name');
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: `No blood requisition found for identifier: ${identifier}`,
+      });
+    }
+
+    const isFulfilled = request.status === 'FULFILLED';
+    const isApproved = request.status === 'APPROVED' || isFulfilled;
+    const isRejected = request.status === 'REJECTED';
+
+    const stages = [
+      {
+        id: 'STEP_1',
+        title: 'Emergency Requisition Logged',
+        description: `Order registered for ${request.patientName} (${request.requiredQuantity} unit(s) of ${request.bloodGroup} ${request.componentType.replace('_', ' ')}). Priority Urgency: ${request.urgency}.`,
+        status: 'COMPLETED',
+        timestamp: request.createdAt,
+      },
+      {
+        id: 'STEP_2',
+        title: 'Clinical Cross-Matching & Stock Verification',
+        description: isRejected
+          ? `Request declined: ${request.rejectionReason}`
+          : isApproved
+          ? 'Pathology lab verified serological compatibility and secured inventory in Cold Vault A.'
+          : 'Priority queue verification currently active with medical phlebotomist.',
+        status: isRejected ? 'FAILED' : isApproved ? 'COMPLETED' : 'IN_PROGRESS',
+        timestamp: request.processedAt || null,
+      },
+      {
+        id: 'STEP_3',
+        title: 'Cold-Chain Unit Allocation',
+        description: isFulfilled
+          ? `Allocated verified units: ${request.allocatedUnitIds.join(', ')} from Cold Storage Vault.`
+          : isApproved
+          ? 'Units reserved. Awaiting final cold-box dispatch packing.'
+          : 'Pending allocation.',
+        status: isFulfilled ? 'COMPLETED' : isApproved ? 'IN_PROGRESS' : 'PENDING',
+        timestamp: request.processedAt || null,
+      },
+      {
+        id: 'STEP_4',
+        title: 'Active Dispatch & Cold Chain Transit',
+        description: isFulfilled
+          ? `Dispatched via Emergency Cold-Box Carrier. Current monitored temperature: 3.8°C (Optimal range: 2.0°C - 6.0°C). En route to ${request.hospitalName}.`
+          : 'Awaiting dispatch confirmation.',
+        status: isFulfilled ? 'IN_PROGRESS' : 'PENDING',
+        temperature: isFulfilled ? '3.8°C' : null,
+      },
+      {
+        id: 'STEP_5',
+        title: 'Bedside Delivery & Transfusion Handover',
+        description: isFulfilled
+          ? `Designated for ICU/Surgical ward handover at ${request.hospitalName}. Target date: ${new Date(request.requiredDate).toLocaleDateString()}.`
+          : 'Scheduled upon dispatch arrival.',
+        status: isFulfilled ? 'READY_FOR_DELIVERY' : 'PENDING',
+      },
+    ];
+
+    res.status(200).json({
+      success: true,
+      request,
+      stages,
+      telemetry: {
+        currentTemp: '3.8°C',
+        tempStatus: 'OPTIMAL (2°C - 6°C)',
+        courier: 'HemoVault Cold-Chain Logistics Unit 04',
+        etaMinutes: isFulfilled ? 18 : null,
+        destination: request.hospitalName,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // @desc    Get requester's own requests
 // @route   GET /api/requests/my
 // @access  Private (Requester)

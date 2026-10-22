@@ -1,0 +1,10 @@
+.env
+.env.*
+.env.local
+docs/
+report_gen/
+scripts/
+.git
+node_modules
+client/node_modules
+server/node_modules
